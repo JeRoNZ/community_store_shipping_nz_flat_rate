@@ -1,5 +1,5 @@
-#NZ Flat Rate Shipping Method#
-##A flat rate shipping method for the concrete5 community store.##
+# NZ Flat Rate Shipping Method #
+## A flat rate shipping method for the concrete5 community store. ##
 https://github.com/concrete5-community-store/community_store
 
 This method expects that the country selected will be NZ, and has two flat rates,
