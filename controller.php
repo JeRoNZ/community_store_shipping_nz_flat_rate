@@ -11,10 +11,15 @@ defined('C5_EXECUTE') or die(_("Access Denied."));
 class Controller extends Package
 {
     protected $pkgHandle = 'community_store_shipping_nz_flat_rate';
-    protected $appVersionRequired = '5.7.2';
-    protected $pkgVersion = '0.1';
+    protected $appVersionRequired = '8.1';
+    protected $pkgVersion = '2.0.0';
 
-    public function getPackageDescription()
+	protected $pkgAutoloaderRegistries = [
+		'src/CommunityStore' => '\Concrete\Package\CommunityStoreShippingNzFlatRate\Src\CommunityStore',
+	];
+
+
+	public function getPackageDescription()
     {
         return t("NZ Flat Rate Shipping Method for Community Store");
     }

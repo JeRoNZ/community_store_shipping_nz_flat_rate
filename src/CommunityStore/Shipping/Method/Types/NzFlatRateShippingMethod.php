@@ -9,11 +9,15 @@ use Concrete\Package\CommunityStore\Src\CommunityStore\Cart\Cart as StoreCart;
 use Concrete\Package\CommunityStore\Src\CommunityStore\Utilities\Calculator as StoreCalculator;
 use Concrete\Package\CommunityStore\Src\CommunityStore\Customer\Customer as StoreCustomer;
 use Concrete\Package\CommunityStore\Src\CommunityStore\Shipping\Method\ShippingMethodOffer as StoreShippingMethodOffer;
+use Concrete\Core\Support\Facade\DatabaseORM as dbORM;
+use Doctrine\ORM\Mapping as ORM;
+
 
 /**
- * @Entity
- * @Table(name="CommunityStoreNZFlatRateMethods")
+ * @ORM\Entity
+ * @ORM\Table(name="CommunityStoreNZFlatRateMethods")
  */
+
 class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 {
     public function getShippingMethodTypeName() {
@@ -21,12 +25,12 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
     }
 
     /**
-     * @Column(type="float")
+     * @ORM\Column(type="float")
      */
     protected $north;
 
 	/**
-	 * @Column(type="float")
+	 * @ORM\Column(type="float")
 	 */
 	protected $south;
 
@@ -68,7 +72,7 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
         // do any saves here
         $sm->setNorth($data['north']);
         $sm->setSouth($data['south']);
-		$em = \ORM::entityManager();
+		$em = dbORM::entityManager();
         $em->persist($sm);
         $em->flush();
         return $sm;
@@ -103,9 +107,9 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 		$selectedCountries = array('NZ');
 		if (in_array($custCountry, $selectedCountries)) {
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	private function getRate()
