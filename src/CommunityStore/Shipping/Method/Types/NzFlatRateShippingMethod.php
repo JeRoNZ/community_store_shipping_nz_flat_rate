@@ -154,7 +154,7 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 			return false;
 		}
 
-		$rural = $this->isRural();
+		$rural = self::isRural();
 
 		// South island postcodes are 7000 and above.
 		// Hurrah for NZ.
@@ -174,7 +174,7 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 	}
 
 
-	private function isRural() {
+	public static function isRural() {
 		$customer = new StoreCustomer();
 		$address = $customer->getValue('shipping_address');
 		/* @var $address AddressValue | \stdClass */
