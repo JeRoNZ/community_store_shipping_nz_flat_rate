@@ -11,6 +11,7 @@ use Concrete\Package\CommunityStore\Src\CommunityStore\Customer\Customer as Stor
 use Concrete\Package\CommunityStore\Src\CommunityStore\Shipping\Method\ShippingMethodOffer as StoreShippingMethodOffer;
 use Concrete\Core\Support\Facade\DatabaseORM as dbORM;
 use Doctrine\ORM\Mapping as ORM;
+use Concrete\Core\Entity\Attribute\Value\Value\AddressValue;
 
 
 /**
@@ -32,27 +33,54 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 	/**
 	 * @ORM\Column(type="float")
 	 */
+	protected $northrd;
+
+	/**
+	 * @ORM\Column(type="float")
+	 */
 	protected $south;
+
+	/**
+	 * @ORM\Column(type="float")
+	 */
+	protected $southrd;
 
     public function getSouth()
     {
         return $this->south;
     }
+	public function getSouthRD()
+	{
+		return $this->southrd;
+	}
 	public function getNorth()
 	{
 		return $this->north;
+	}
+	public function getNorthRD()
+	{
+		return $this->northrd;
 	}
 
     public function setSouth($rate)
     {
         $this->south = $rate;
     }
+	public function setSouthRD($rate)
+	{
+		$this->southrd = $rate;
+	}
+
 	public function setNorth($rate)
 	{
 		$this->north = $rate;
 	}
+	public function setNorthRD($rate)
+	{
+		$this->northrd = $rate;
+	}
 
-    public function addMethodTypeMethod($data)
+	public function addMethodTypeMethod($data)
     {
         return $this->addOrUpdate('update', $data);
     }
@@ -64,14 +92,16 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 
     private function addOrUpdate($type, $data)
     {
-        if ($type == "update") {
+        if ($type === "update") {
             $sm = $this;
         } else {
             $sm = new self();
         }
         // do any saves here
         $sm->setNorth($data['north']);
+        $sm->setNorthRD($data['northRD']);
         $sm->setSouth($data['south']);
+        $sm->setSouthRD($data['southRD']);
 		$em = dbORM::entityManager();
         $em->persist($sm);
         $em->flush();
@@ -80,7 +110,7 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 
     public function dashboardForm($shippingMethod = null)
     {
-        $this->set('form', Core::make("helper/form"));
+        $this->set('form', Core::make('helper/form'));
         $this->set('smt', $this);
         if (is_object($shippingMethod)) {
             $smtm = $shippingMethod->getShippingMethodTypeMethod();
@@ -120,25 +150,94 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 		$postcode = $customer->getValue('shipping_address')->postal_code;
 		if (! preg_match('/[0-9]{4}/',$postcode)) {
 			// because something's off so charge the max
-			return $this->getSouth() > $this->getNorth() ? $this->getSouth() : $this->getNorth();
+			#return $this->getSouth() > $this->getNorth() ? $this->getSouth() : $this->getNorth();
+			return false;
 		}
+
+		$rural = $this->isRural();
 
 		// South island postcodes are 7000 and above.
 		// Hurrah for NZ.
-		if ($postcode >= 7000)
+		if ($postcode >= 7000) {
+			if  ($rural) {
+				return $this->getSouthRD();
+			}
+
 			return $this->getSouth();
+		}
+
+		if  ($rural) {
+			return $this->getNorthRD();
+		}
 
 		return $this->getNorth();
 	}
+
+
+	private function isRural() {
+		$customer = new StoreCustomer();
+		$address = $customer->getValue('shipping_address');
+		/* @var $address AddressValue | \stdClass */
+
+		$rural = false;
+		if ($address instanceof \stdClass)
+			$add = $address->address1;
+		else {
+			$add = $address->getAddress1();
+		}
+		if (preg_match('|R[ .]*D[ .]*[0-9]+|i', $add)) {
+			return true;
+		}
+		if (! $rural) {
+			if ($address instanceof \stdClass)
+				$add = $address->address2;
+			else {
+				$add = $address->getAddress2();
+			}
+			if (preg_match('|R[ .]*D[ .]*[0-9]+|i', $add)) {
+				return true;
+			}
+		}
+		if (!$rural) {
+			if ($address instanceof \stdClass)
+				$add = $address->city;
+			else {
+				$add = $address->getAddress3();
+			}
+			if (preg_match('|R[ .]*D[ .]*[0-9]+|i', $add)) {
+				return true;
+			}
+		}
+		if (!$rural) {
+			if ($address instanceof \stdClass)
+				$postcode = $address->postal_code;
+			else {
+				$postcode = trim($address->getPostalCode());
+			}
+			$db = Database::Connection();
+			/* @var $db \Concrete\Core\Database\Connection\Connection */
+			$sql = 'SELECT * FROM RD_Postcodes WHERE postcode=?';
+			$rows = $db->fetchAssoc($sql, [$postcode]);
+			if ($rows) {
+				return true;
+			}
+		}
+
+		return false;
+    }
+
 
 
 	public function getOffers() {
 		$offers = array();
 
 		$offer = new StoreShippingMethodOffer();
-		$offer->setRate($this->getRate());
+		$rate = $this->getRate();
+		if ($rate !== false) {
+			$offer->setRate($this->getRate());
+			$offers[] = $offer;
+		}
 
-		$offers[] = $offer;
 		return $offers;
 	}
 

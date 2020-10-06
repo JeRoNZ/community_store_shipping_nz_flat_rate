@@ -12,7 +12,7 @@ class Controller extends Package
 {
     protected $pkgHandle = 'community_store_shipping_nz_flat_rate';
     protected $appVersionRequired = '8.1';
-    protected $pkgVersion = '2.0.0';
+    protected $pkgVersion = '2.0.1';
 
 	protected $pkgAutoloaderRegistries = [
 		'src/CommunityStore' => '\Concrete\Package\CommunityStoreShippingNzFlatRate\Src\CommunityStore',
