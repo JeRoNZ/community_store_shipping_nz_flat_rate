@@ -179,6 +179,10 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 		$address = $customer->getValue('shipping_address');
 		/* @var $address AddressValue | \stdClass */
 
+		if ($address === null) {
+			return false;
+		}
+
 		$rural = false;
 		if ($address instanceof \stdClass)
 			$add = $address->address1;

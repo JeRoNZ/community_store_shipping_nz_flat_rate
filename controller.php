@@ -2,7 +2,7 @@
 
 namespace Concrete\Package\CommunityStoreShippingNzFlatRate;
 
-use Package;
+use Concrete\Core\Package\Package;
 use Whoops\Exception\ErrorException;
 use Concrete\Package\CommunityStore\Src\CommunityStore\Shipping\Method\ShippingMethodType as StoreShippingMethodType;
 
@@ -12,7 +12,7 @@ class Controller extends Package
 {
     protected $pkgHandle = 'community_store_shipping_nz_flat_rate';
     protected $appVersionRequired = '8.1';
-    protected $pkgVersion = '2.0.1';
+    protected $pkgVersion = '2.0.2';
 
 	protected $pkgAutoloaderRegistries = [
 		'src/CommunityStore' => '\Concrete\Package\CommunityStoreShippingNzFlatRate\Src\CommunityStore',
@@ -37,6 +37,7 @@ class Controller extends Package
         } else {
             $pkg = parent::install();
             StoreShippingMethodType::add('nz_flat_rate', 'NZ Flat Rate Shipping', $pkg);
+            StoreShippingMethodType::add('store_pickup', 'Store Pickup', $pkg);
         }
 
     }
@@ -46,7 +47,20 @@ class Controller extends Package
         if ($pm) {
             $pm->delete();
         }
+		$pm = StoreShippingMethodType::getByHandle('store_pickup');
+		if ($pm) {
+			$pm->delete();
+		}
         $pkg = parent::uninstall();
     }
+
+    public function upgrade() {
+		$pkg = $this->app->make('Concrete\Core\Package\PackageService')->getByHandle($this->pkgHandle);
+		$pm = StoreShippingMethodType::getByHandle('store_pickup');
+		if (! $pm) {
+			StoreShippingMethodType::add('store_pickup', 'Store Pickup', $pkg);
+		}
+		parent::upgrade();
+	}
 
 }
