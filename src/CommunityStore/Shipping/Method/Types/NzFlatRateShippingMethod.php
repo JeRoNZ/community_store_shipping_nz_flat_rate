@@ -133,10 +133,13 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 	public function isWithinSelectedCountries()
 	{
 		$customer = new StoreCustomer();
-		$custCountry = $customer->getValue('shipping_address')->country;
-		$selectedCountries = array('NZ');
-		if (in_array($custCountry, $selectedCountries)) {
-			return true;
+		$address= $customer->getValue('shipping_address');
+		if ($address){
+			$custCountry = $address->country;
+			$selectedCountries = array('NZ');
+			if (in_array($custCountry, $selectedCountries)) {
+				return true;
+			}
 		}
 
 		return false;
