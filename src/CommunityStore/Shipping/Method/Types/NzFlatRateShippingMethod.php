@@ -230,6 +230,18 @@ class NzFlatRateShippingMethod extends ShippingMethodTypeMethod
 			}
 		}
 
+		if (!$rural) {
+			if ($address instanceof \stdClass)
+				$postcode = $address->postal_code;
+			else {
+				$postcode = trim($address->getPostalCode());
+			}
+			// if digit 3 is 7,8, or 9 - it's rural
+			if (preg_match('/^[0-9]{2}[789][0-9]$/', $postcode)){
+				return true;
+			}
+		}
+
 		return false;
     }
 
