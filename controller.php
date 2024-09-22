@@ -3,16 +3,17 @@
 namespace Concrete\Package\CommunityStoreShippingNzFlatRate;
 
 use Concrete\Core\Package\Package;
+use Concrete\Core\Package\PackageService;
 use Whoops\Exception\ErrorException;
 use Concrete\Package\CommunityStore\Src\CommunityStore\Shipping\Method\ShippingMethodType as StoreShippingMethodType;
 
-defined('C5_EXECUTE') or die(_("Access Denied."));
+defined('C5_EXECUTE') or die('Access Denied.');
 
 class Controller extends Package
 {
     protected $pkgHandle = 'community_store_shipping_nz_flat_rate';
     protected $appVersionRequired = '8.1';
-    protected $pkgVersion = '2.0.2';
+    protected $pkgVersion = '2.1';
 
 	protected $pkgAutoloaderRegistries = [
 		'src/CommunityStore' => '\Concrete\Package\CommunityStoreShippingNzFlatRate\Src\CommunityStore',
@@ -31,7 +32,8 @@ class Controller extends Package
 
     public function install()
     {
-        $installed = Package::getInstalledHandles();
+	    $installed = app(PackageService::class)->getInstalledHandles();
+
         if(!(is_array($installed) && in_array('community_store',$installed)) ) {
             throw new ErrorException(t('This package requires that Community Store be installed'));
         } else {
@@ -51,11 +53,10 @@ class Controller extends Package
 		if ($pm) {
 			$pm->delete();
 		}
-        $pkg = parent::uninstall();
     }
 
     public function upgrade() {
-		$pkg = $this->app->make('Concrete\Core\Package\PackageService')->getByHandle($this->pkgHandle);
+		$pkg = app(PackageService::class)->getByHandle($this->pkgHandle);
 		$pm = StoreShippingMethodType::getByHandle('store_pickup');
 		if (! $pm) {
 			StoreShippingMethodType::add('store_pickup', 'Store Pickup', $pkg);
